@@ -8,7 +8,7 @@ from app.models import Book
 class BookReadDTO(SQLAlchemyDTO[Book]):
     """DTO for reading book data."""
 
-    config = SQLAlchemyDTOConfig()
+    config = SQLAlchemyDTOConfig(exclude={"book_categories"})
 
 
 class BookCreateDTO(SQLAlchemyDTO[Book]):

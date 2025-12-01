@@ -8,6 +8,18 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 
+class BookCategory(BigIntAuditBase):
+    """Intermediate table for the book-category relation"""
+
+    __tablename__ = "book_categories"
+
+    #Foreign keys
+    book_id: Mapped[int] = mapped_column(ForeignKey("books.id"), primary_key=True)
+    category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"), primary_key=True)
+
+    book: Mapped["Book"] = relationship(back_populates="book_categories")
+    category: Mapped["Category"] = relationship(back_populates="book_categories")
+
 class User(BigIntAuditBase):
     """User model with audit fields."""
 
@@ -33,6 +45,17 @@ class Book(BigIntAuditBase):
 
     loans: Mapped[list["Loan"]] = relationship(back_populates="book")
 
+    book_categories: Mapped[list["BookCategory"]] = relationship(
+        back_populates="book",
+        cascade="all, delete-orphan"
+    )
+
+    categories: Mapped[list["Category"]] = relationship(
+        secondary="book_categories",
+        back_populates="books",
+        viewonly=True
+    )
+
 
 class Loan(BigIntAuditBase):
     """Loan model with audit fields."""
@@ -47,6 +70,23 @@ class Loan(BigIntAuditBase):
     user: Mapped[User] = relationship(back_populates="loans")
     book: Mapped[Book] = relationship(back_populates="loans")
 
+class Category(BigIntAuditBase):
+    """Category of book"""
+
+    __tablename__ = "categories"
+    name: Mapped[str] = mapped_column(unique=True)
+    description: Mapped[str | None]
+
+    book_categories: Mapped[list["BookCategory"]] = relationship(
+        back_populates="category",
+        cascade="all, delete-orphan"
+    )
+
+    books:Mapped[list["Book"]] = relationship(
+        secondary="book_categories",
+        back_populates="categories",
+        viewonly=True
+    )
 
 @dataclass
 class PasswordUpdate:
