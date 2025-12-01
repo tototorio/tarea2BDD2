@@ -30,6 +30,21 @@ class User(BigIntAuditBase):
     password: Mapped[str]
 
     loans: Mapped[list["Loan"]] = relationship(back_populates="user")
+    reviews: Mapped[list["Review"]] = relationship(back_populates="user")
+
+class Review(BigIntAuditBase):
+    """Review model"""
+
+    __tablename__ = "reviews"
+
+    rating: Mapped[int]
+    comment: Mapped[str]
+    review_dt: Mapped[date] = mapped_column(default=datetime.today)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    book_id: Mapped[int] = mapped_column(ForeignKey("books.id"))
+    
+    user: Mapped["User"] = relationship(back_populates="reviews")
+    book: Mapped["Book"] = relationship(back_populates="reviews")
 
 
 class Book(BigIntAuditBase):
@@ -44,6 +59,7 @@ class Book(BigIntAuditBase):
     published_year: Mapped[int]
 
     loans: Mapped[list["Loan"]] = relationship(back_populates="book")
+    reviews: Mapped[list["Review"]] = relationship(back_populates="book")
 
     book_categories: Mapped[list["BookCategory"]] = relationship(
         back_populates="book",
