@@ -15,7 +15,7 @@ class LoanCreateDTO(SQLAlchemyDTO[Loan]):
     """DTO for creating loans."""
 
     config = SQLAlchemyDTOConfig(
-        exclude={"id", "created_at", "updated_at", "user", "book"},
+        exclude={"id", "created_at", "updated_at", "user", "book", "due_date", "fine_amout", "status"},
     )
 
 
@@ -23,6 +23,6 @@ class LoanUpdateDTO(SQLAlchemyDTO[Loan]):
     """DTO for updating loans with partial data."""
 
     config = SQLAlchemyDTOConfig(
-        exclude={"id", "created_at", "updated_at", "user", "book"},
+        exclude={"id", "created_at", "updated_at", "user", "book", "due_date", "fined_amout"},
         partial=True,
     )

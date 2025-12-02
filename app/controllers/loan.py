@@ -1,6 +1,7 @@
 """Controller for Loan endpoints."""
 
 from typing import Sequence
+from datetime import date, timedelta
 
 from advanced_alchemy.exceptions import DuplicateKeyError, NotFoundError
 from litestar import Controller, delete, get, patch, post
@@ -42,8 +43,13 @@ class LoanController(Controller):
         loans_repo: LoanRepository,
     ) -> Loan:
         """Create a new loan."""
+        loan_instance = data.create_instance()
+        
+        today = date.today()
+        loan_instance.loan_dt = today
+        loan_instance.due_date = today + timedelta(days=14)
 
-        return loans_repo.add(data.create_instance())
+        return loans_repo.add(loan_instance)
 
     @patch("/{id:int}", dto=LoanUpdateDTO)
     async def update_loan(

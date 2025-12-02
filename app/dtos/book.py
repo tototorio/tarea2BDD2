@@ -8,7 +8,7 @@ from app.models import Book
 class BookReadDTO(SQLAlchemyDTO[Book]):
     """DTO for reading book data."""
 
-    config = SQLAlchemyDTOConfig(exclude={"book_categories", "reviews", "loans"}, max_nested_depth=1)
+    config = SQLAlchemyDTOConfig(exclude={"password", "book_categories", "reviews", "loans"}, max_nested_depth=1)
 
 
 class BookCreateDTO(SQLAlchemyDTO[Book]):
