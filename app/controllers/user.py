@@ -1,6 +1,7 @@
 """Controller for User endpoints."""
 
 from typing import Sequence
+import re
 
 from advanced_alchemy.exceptions import DuplicateKeyError, NotFoundError
 from litestar import Controller, delete, get, patch, post
@@ -13,6 +14,7 @@ from app.dtos.user import UserCreateDTO, UserReadDTO, UserUpdateDTO
 from app.models import PasswordUpdate, User
 from app.repositories.user import UserRepository, provide_user_repo
 
+EMAIL_REGEX = r"^[\w\.-]+@[\w\.-]+\.\w+$"
 
 class UserController(Controller):
     """Controller for user management operations."""
@@ -43,6 +45,13 @@ class UserController(Controller):
         users_repo: UserRepository,
     ) -> User:
         """Create a new user."""
+        user_data = data.as_builtins()
+
+        if not re.match(EMAIL_REGEX, user_data["email"]):
+            raise HTTPException(
+                status_code=400,
+                detail="Formato incorrecto de email."
+            )
 
         return users_repo.add_with_hashed_password(data)
 
@@ -54,6 +63,15 @@ class UserController(Controller):
         users_repo: UserRepository,
     ) -> User:
         """Update a user by ID."""
+        user_data = data.as_builtins()
+
+        if "email" in user_data:
+            if not re.match(EMAIL_REGEX, user_data["email"]):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Formato incorrecto de email."
+                )
+        
         user, _ = users_repo.get_and_update(match_fields="id", id=id, **data.as_builtins())
 
         return user

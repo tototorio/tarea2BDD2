@@ -28,6 +28,10 @@ class User(BigIntAuditBase):
     username: Mapped[str] = mapped_column(unique=True)
     fullname: Mapped[str]
     password: Mapped[str]
+    email: Mapped[str] = mapped_column(unique=True)
+    phone: Mapped[str | None]
+    address: Mapped[str | None]
+    is_active: Mapped[bool] = mapped_column(default=True)
 
     loans: Mapped[list["Loan"]] = relationship(back_populates="user")
     reviews: Mapped[list["Review"]] = relationship(back_populates="user")
