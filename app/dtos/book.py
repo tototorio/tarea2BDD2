@@ -8,14 +8,14 @@ from app.models import Book
 class BookReadDTO(SQLAlchemyDTO[Book]):
     """DTO for reading book data."""
 
-    config = SQLAlchemyDTOConfig(exclude={"book_categories"})
+    config = SQLAlchemyDTOConfig(exclude={"book_categories", "reviews", "loans"}, max_nested_depth=1)
 
 
 class BookCreateDTO(SQLAlchemyDTO[Book]):
     """DTO for creating books."""
 
     config = SQLAlchemyDTOConfig(
-        exclude={"id", "created_at", "updated_at", "loans"},
+        exclude={"id", "created_at", "updated_at", "loans", "reviews", "categories", "book_categories"},
     )
 
 

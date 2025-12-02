@@ -44,10 +44,10 @@ class ReviewController(Controller):
         reviews_repo: ReviewRepository,
     ) -> Review:
         """Create a new review."""
-        review_data = data.create_instance()
+        review_data = data.as_builtins()
 
         #Checks if the rating is valid
-        if review_data.rating < 1 or review_data.rating > 5:
+        if review_data["rating"] < 1 or review_data["rating"] > 5:
             raise HTTPException(
                 status_code=400,
                 detail="El rating debe estar entre 1 y 5"
