@@ -47,13 +47,14 @@ class BookController(Controller):
         author_name: str | None = None,
         year_from: Annotated[int | None, Parameter(query="from")] = None,
         to: int | None = None,
-        available: bool | None = None,
-        most_reviewed: bool | None = None,
-        recent: bool | None = None,
+        get_available: bool | None = None,
+        get_most_reviewed: bool | None = None,
+        get_recent: bool | None = None,
         limit: Annotated[int, Parameter(query="limit", ge=1, le=50, default=10)] = 10,
                          
     ) -> Sequence[Book]:
-        """All search related requests"""
+        """All search related to books"""
+        
         if book_id:
             return books_repo.list(id=book_id)
         if book_title:
@@ -64,11 +65,11 @@ class BookController(Controller):
             return books_repo.search_by_author(author_name)
         if year_from is not None and to is not None:
             return books_repo.list(Book.published_year.between(year_from, to))
-        if available:
+        if get_available:
             return books_repo.get_available_books()
-        if most_reviewed:
+        if get_most_reviewed:
             return books_repo.get_most_reviewed_books() 
-        if recent:
+        if get_recent:
             return books_repo.list(
             LimitOffset(offset=0, limit=limit),
             order_by=Book.created_at.desc(),
