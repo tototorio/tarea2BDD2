@@ -1,5 +1,4 @@
 """Data Transfer Objects for Book endpoints."""
-
 from advanced_alchemy.extensions.litestar import SQLAlchemyDTO, SQLAlchemyDTOConfig
 
 from app.models import Book
@@ -8,7 +7,7 @@ from app.models import Book
 class BookReadDTO(SQLAlchemyDTO[Book]):
     """DTO for reading book data."""
 
-    config = SQLAlchemyDTOConfig(exclude={"password", "book_categories", "reviews", "loans"}, max_nested_depth=1)
+    config = SQLAlchemyDTOConfig(exclude={"book_categories", "reviews", "loans"}, max_nested_depth=1)
 
 
 class BookCreateDTO(SQLAlchemyDTO[Book]):
@@ -26,3 +25,5 @@ class BookUpdateDTO(SQLAlchemyDTO[Book]):
         exclude={"id", "created_at", "updated_at", "loans"},
         partial=True,
     )
+
+

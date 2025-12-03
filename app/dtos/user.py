@@ -23,7 +23,7 @@ class UserUpdateDTO(SQLAlchemyDTO[User]):
     """DTO for updating users with partial data."""
 
     config = SQLAlchemyDTOConfig(
-        exclude={"id", "created_at", "password", "loans", "reviews", "is_active"},
+        exclude={"id", "created_at", "loans", "reviews", "is_active"},
         partial=True,
     )
 

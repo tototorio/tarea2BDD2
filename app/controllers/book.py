@@ -1,6 +1,8 @@
 """Controller for Book endpoints."""
 
 from typing import Annotated, Sequence
+from dataclasses import dataclass
+
 
 from advanced_alchemy.exceptions import DuplicateKeyError, NotFoundError
 from advanced_alchemy.filters import LimitOffset
@@ -16,6 +18,12 @@ from app.models import Book, BookStats
 from app.repositories.book import BookRepository, provide_book_repo
 
 
+#Clase auxiliar para recibir actualización de stock
+@dataclass
+class StockUpdate:
+    quantity: int
+
+
 class BookController(Controller):
     """Controller for book management operations."""
 
@@ -29,14 +37,73 @@ class BookController(Controller):
     }
 
     @get("/")
-    async def list_books(self, books_repo: BookRepository) -> Sequence[Book]:
-        """Get all books."""
+    async def list_books(
+        self, 
+        books_repo: BookRepository,
+        #Filtros opcionales
+        book_id: int | None = None,
+        book_title: str | None = None,
+        category_id: int | None = None,
+        author_name: str | None = None,
+        year_from: Annotated[int | None, Parameter(query="from")] = None,
+        to: int | None = None,
+        available: bool | None = None,
+        most_reviewed: bool | None = None,
+        recent: bool | None = None,
+        limit: Annotated[int, Parameter(query="limit", ge=1, le=50, default=10)] = 10,
+                         
+    ) -> Sequence[Book]:
+        """All search related requests"""
+        if book_id:
+            return books_repo.list(id=book_id)
+        if book_title:
+            return books_repo.list(Book.title.ilike(f"%{book_title}%"))
+        if category_id:
+            return books_repo.find_by_category(category_id)
+        if author_name:
+            return books_repo.search_by_author(author_name)
+        if year_from is not None and to is not None:
+            return books_repo.list(Book.published_year.between(year_from, to))
+        if available:
+            return books_repo.get_available_books()
+        if most_reviewed:
+            return books_repo.get_most_reviewed_books() 
+        if recent:
+            return books_repo.list(
+            LimitOffset(offset=0, limit=limit),
+            order_by=Book.created_at.desc(),
+        ) 
+
         return books_repo.list()
 
-    @get("/{id:int}")
-    async def get_book(self, id: int, books_repo: BookRepository) -> Book:
-        """Get a book by ID."""
-        return books_repo.get(id)
+
+    @get("/stats")
+    async def get_book_stats(
+        self,
+        books_repo: BookRepository,
+    ) -> BookStats:
+        """Get statistics about books."""
+        total_books = books_repo.count()
+        if total_books == 0:
+            return BookStats(
+                total_books=0,
+                average_pages=0,
+                oldest_publication_year=None,
+                newest_publication_year=None,
+            )
+
+        books = books_repo.list()
+
+        average_pages = sum(book.pages for book in books) / total_books
+        oldest_year = min(book.published_year for book in books)
+        newest_year = max(book.published_year for book in books)
+
+        return BookStats(
+            total_books=total_books,
+            average_pages=average_pages,
+            oldest_publication_year=oldest_year,
+            newest_publication_year=newest_year,
+        )
 
     @post("/", dto=BookCreateDTO)
     async def create_book(
@@ -79,19 +146,42 @@ class BookController(Controller):
         
         book, _ = books_repo.get_and_update(match_fields="id", id=id, **data.as_builtins())
         return book
+    
+    @patch("/stock", dto=BookUpdateDTO)
+    async def update_stock(
+        self,
+        id: int,
+        data: StockUpdate,
+        books_repo: BookRepository
+    ) -> Book:
+        try: 
+            return books_repo.update_stock(book_id=id, quantity=data.quantity)
+        except ValueError as e:
+            raise HTTPException(
+                status_code=400,
+                details=str(e)
+            )
 
     @delete("/{id:int}")
     async def delete_book(self, id: int, books_repo: BookRepository) -> None:
         """Delete a book by ID."""
         books_repo.delete(id)
 
+
+
+""""
+    @get("/{id:int}")
+    async def get_book(self, id: int, books_repo: BookRepository) -> Book:
+        #Get a book by ID.
+        return books_repo.get(id)
+    
     @get("/search/")
     async def search_book_by_title(
         self,
         title: str,
         books_repo: BookRepository,
     ) -> Sequence[Book]:
-        """Search books by title."""
+        #Search books by title.
         return books_repo.list(Book.title.ilike(f"%{title}%"))
 
     @get("/filter")
@@ -101,7 +191,7 @@ class BookController(Controller):
         to: int,
         books_repo: BookRepository,
     ) -> Sequence[Book]:
-        """Filter books by published year."""
+        #Filter books by published year.
         return books_repo.list(Book.published_year.between(year_from, to))
 
     @get("/recent")
@@ -110,36 +200,9 @@ class BookController(Controller):
         limit: Annotated[int, Parameter(query="limit", default=10, ge=1, le=50)],
         books_repo: BookRepository,
     ) -> Sequence[Book]:
-        """Get most recent books."""
+        #Get most recent books.
         return books_repo.list(
             LimitOffset(offset=0, limit=limit),
             order_by=Book.created_at.desc(),
         )
-
-    @get("/stats")
-    async def get_book_stats(
-        self,
-        books_repo: BookRepository,
-    ) -> BookStats:
-        """Get statistics about books."""
-        total_books = books_repo.count()
-        if total_books == 0:
-            return BookStats(
-                total_books=0,
-                average_pages=0,
-                oldest_publication_year=None,
-                newest_publication_year=None,
-            )
-
-        books = books_repo.list()
-
-        average_pages = sum(book.pages for book in books) / total_books
-        oldest_year = min(book.published_year for book in books)
-        newest_year = max(book.published_year for book in books)
-
-        return BookStats(
-            total_books=total_books,
-            average_pages=average_pages,
-            oldest_publication_year=oldest_year,
-            newest_publication_year=newest_year,
-        )
+"""
