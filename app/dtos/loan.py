@@ -4,25 +4,24 @@ from advanced_alchemy.extensions.litestar import SQLAlchemyDTO, SQLAlchemyDTOCon
 
 from app.models import Loan
 
-
 class LoanReadDTO(SQLAlchemyDTO[Loan]):
     """DTO for reading loan data."""
 
-    config = SQLAlchemyDTOConfig()
-
+    config = SQLAlchemyDTOConfig(
+        exclude={"user", "book"}
+    )
 
 class LoanCreateDTO(SQLAlchemyDTO[Loan]):
     """DTO for creating loans."""
 
     config = SQLAlchemyDTOConfig(
-        exclude={"id", "created_at", "updated_at", "user", "book", "due_date", "fine_amout", "status"},
+        exclude={"id", "created_at", "updated_at", "user", "book", "due_dt", "fine_amout", "status"},
     )
-
 
 class LoanUpdateDTO(SQLAlchemyDTO[Loan]):
     """DTO for updating loans with partial data."""
 
     config = SQLAlchemyDTOConfig(
-        exclude={"id", "created_at", "updated_at", "user", "book", "due_date", "fined_amout"},
+        exclude={"id", "created_at", "updated_at", "user", "book", "due_dt", "fine_amout"},
         partial=True,
     )

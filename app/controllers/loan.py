@@ -34,21 +34,31 @@ class LoanController(Controller):
         loans_repo: LoanRepository,
         loan_id: int | None = None,
         user_id: int | None = None,
-        get_active: bool | None = None,
-        get_overdue: bool | None = None
     ) -> Sequence[Loan]:
-        """All search related to loans"""
+        """Specific searches"""
 
         if loan_id:
             return loans_repo.list(id=loan_id) 
         if user_id:
             return loans_repo.get_user_loan_history(user_id)
-        if get_active:
-            return loans_repo.get_active_loans()
-        if get_overdue:
-            return loans_repo.get_overdue_loans()
         
         return loans_repo.list()
+
+    @get("/active")
+    async def get_active(
+        self, 
+        loans_repo: LoanRepository,
+    ) -> Sequence[Loan]:
+        """Get active loans"""
+        return loans_repo.get_active_loans()
+
+    @get("/overdue")
+    async def get_active(
+        self, 
+        loans_repo: LoanRepository,
+    ) -> Sequence[Loan]:
+        """Get overdue loans"""
+        return loans_repo.get_overdue_loans()
 
     @get("/fine")
     async def get_fine(
@@ -65,6 +75,7 @@ class LoanController(Controller):
         loans_repo: LoanRepository,
         loan_id: int,
     ) -> Loan:
+        """Terminate a loan"""
         try:
             return loans_repo.return_book(loan_id)
         except ValueError as e:
@@ -73,7 +84,6 @@ class LoanController(Controller):
                 details=str(e)
             )
         
-    
     @post("/", dto=LoanCreateDTO)
     async def create_loan(
         self,

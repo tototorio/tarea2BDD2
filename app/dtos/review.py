@@ -8,7 +8,18 @@ from app.models import Review
 class ReviewReadDTO(SQLAlchemyDTO[Review]):
     """DTO for reading Review data."""
 
-    config = SQLAlchemyDTOConfig(max_nested_depth=1)
+    config = SQLAlchemyDTOConfig(
+        exclude={
+            "user.password", 
+            "user.email", 
+            "user.phone", 
+            "user.address", 
+            "user.loans", 
+            "user.reviews",   
+            "book.loans",
+            "book.reviews"
+        }
+    )
 
 
 class ReviewCreateDTO(SQLAlchemyDTO[Review]):

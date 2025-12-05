@@ -4,6 +4,7 @@ from typing import Sequence
 from advanced_alchemy.repository import SQLAlchemySyncRepository
 from sqlalchemy.orm import Session
 from sqlalchemy import select, func, desc
+from advanced_alchemy.filters import LimitOffset
 
 from app.models import Book, Category, Review
 
@@ -36,6 +37,10 @@ class BookRepository(SQLAlchemySyncRepository[Book]):
 
         result = self.session.execute(stmt)
         return result.scalars().all()
+    
+    def get_most_recent_books(self, limit: int= 10) -> Sequence[Book]:
+        
+        return self.list(LimitOffset(offset=0, limit=limit),order_by=Book.created_at.desc()),
 
     def update_stock(self, book_id: int, quantity: int) -> Book:
         book = self.get(book_id)

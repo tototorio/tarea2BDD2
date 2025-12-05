@@ -18,7 +18,7 @@ from app.models import Book, BookStats
 from app.repositories.book import BookRepository, provide_book_repo
 
 
-#Clase auxiliar para recibir actualización de stock
+#Auxiliary class to recieve stock update
 @dataclass
 class StockUpdate:
     quantity: int
@@ -40,20 +40,15 @@ class BookController(Controller):
     async def list_books(
         self, 
         books_repo: BookRepository,
-        #Filtros opcionales
+        #Specific filters, they cannot be combined ("year_from" and "to" go together)
         book_id: int | None = None,
         book_title: str | None = None,
         category_id: int | None = None,
         author_name: str | None = None,
         year_from: Annotated[int | None, Parameter(query="from")] = None,
-        to: int | None = None,
-        get_available: bool | None = None,
-        get_most_reviewed: bool | None = None,
-        get_recent: bool | None = None,
-        limit: Annotated[int, Parameter(query="limit", ge=1, le=50, default=10)] = 10,
-                         
+        to: int | None = None      
     ) -> Sequence[Book]:
-        """All search related to books"""
+        """Targeted searches"""
         
         if book_id:
             return books_repo.list(id=book_id)
@@ -65,17 +60,16 @@ class BookController(Controller):
             return books_repo.search_by_author(author_name)
         if year_from is not None and to is not None:
             return books_repo.list(Book.published_year.between(year_from, to))
-        if get_available:
-            return books_repo.get_available_books()
-        if get_most_reviewed:
-            return books_repo.get_most_reviewed_books(limit) 
-        if get_recent:
-            return books_repo.list(
-            LimitOffset(offset=0, limit=limit),
-            order_by=Book.created_at.desc(),
-        ) 
 
         return books_repo.list()
+
+    @get("/available")
+    async def get_available(
+        self,
+        books_repo: BookRepository,
+    ) -> Sequence[Book]:
+        """Get list of available books"""
+        return books_repo.get_available_books()
 
     @get("/most/reviews")
     async def get_most_reviewed(
@@ -83,17 +77,17 @@ class BookController(Controller):
         books_repo: BookRepository,
         limit: Annotated[int, Parameter(query="limit", ge=1, le=50, default=10)] = 10,
     ) -> Sequence[Book]:
-        """Get statistics about books."""
-        total_books = books_repo.count()
-        if total_books == 0:
-            return BookStats(
-                total_books=0,
-                average_pages=0,
-                oldest_publication_year=None,
-                newest_publication_year=None,
-            )
+        """Get most reviewed books up to a limit"""
+        return books_repo.get_most_reviewed_books(limit) 
         
     @get("/most/recent")
+    async def get_most_recent(
+        self,
+        books_repo: BookRepository,
+        limit: Annotated[int, Parameter(query="limit", ge=1, le=50, default=10)] = 10,
+    ) -> Sequence[Book]:
+        return books_repo.get_most_recent_books(limit)
+
     @get("/stats")
     async def get_book_stats(
         self,
@@ -130,7 +124,7 @@ class BookController(Controller):
     ) -> Book:
         """Create a new book."""  
         book_data = data.as_builtins()
-        # Validar que el año esté entre 1000 y el año actual
+        # Makes sure the publish year is within a specific range
         if not (1000 <= book_data["published_year"] <= 2024):
             raise HTTPException(
                 detail="El año de publicación debe estar entre 1000 y 2024",
@@ -154,7 +148,7 @@ class BookController(Controller):
     ) -> Book:
         """Update a book by ID."""
         book_data = data.as_builtins()
-        #Validar que el stock no sea negativo
+        #Makes sure no invalid stock gets declared
         if "stock" in book_data and book_data["stock"] < 0:
             raise HTTPException(
                 detail="El stock no puede bajar de 0",
@@ -171,6 +165,7 @@ class BookController(Controller):
         data: StockUpdate,
         books_repo: BookRepository
     ) -> Book:
+        """Update stock by a certain number (both positive and negative)"""
         try: 
             return books_repo.update_stock(book_id=id, quantity=data.quantity)
         except ValueError as e:
@@ -183,43 +178,3 @@ class BookController(Controller):
     async def delete_book(self, id: int, books_repo: BookRepository) -> None:
         """Delete a book by ID."""
         books_repo.delete(id)
-
-
-
-""""
-    @get("/{id:int}")
-    async def get_book(self, id: int, books_repo: BookRepository) -> Book:
-        #Get a book by ID.
-        return books_repo.get(id)
-    
-    @get("/search/")
-    async def search_book_by_title(
-        self,
-        title: str,
-        books_repo: BookRepository,
-    ) -> Sequence[Book]:
-        #Search books by title.
-        return books_repo.list(Book.title.ilike(f"%{title}%"))
-
-    @get("/filter")
-    async def filter_books_by_year(
-        self,
-        year_from: Annotated[int, Parameter(query="from")],
-        to: int,
-        books_repo: BookRepository,
-    ) -> Sequence[Book]:
-        #Filter books by published year.
-        return books_repo.list(Book.published_year.between(year_from, to))
-
-    @get("/recent")
-    async def get_recent_books(
-        self,
-        limit: Annotated[int, Parameter(query="limit", default=10, ge=1, le=50)],
-        books_repo: BookRepository,
-    ) -> Sequence[Book]:
-        #Get most recent books.
-        return books_repo.list(
-            LimitOffset(offset=0, limit=limit),
-            order_by=Book.created_at.desc(),
-        )
-"""

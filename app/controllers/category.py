@@ -28,10 +28,12 @@ class CategoryController(Controller):
 
     @get("/")
     async def list_categories(self, categories_repo: CategoryRepository) -> Sequence[Category]:
+        """Get list of all categories"""
         return categories_repo.list()
 
     @get("/{id:int}")
     async def get_category(self, id: int, categories_repo: CategoryRepository) -> Category:
+        """Get a specific category"""
         return categories_repo.get(id)
 
     @post("/", dto=CategoryCreateDTO)
@@ -40,6 +42,7 @@ class CategoryController(Controller):
         data: DTOData[Category],
         categories_repo: CategoryRepository,
     ) -> Category:
+        """Create a new category"""
         return categories_repo.add(data.create_instance())
 
     @patch("/{id:int}", dto=CategoryUpdateDTO)
@@ -49,6 +52,7 @@ class CategoryController(Controller):
         data: DTOData[Category],
         categories_repo: CategoryRepository,
     ) -> Category:
+        """Partially update a specific category"""
         category, _ = categories_repo.get_and_update(match_fields="id", id=id, **data.as_builtins())
         return category
 
@@ -58,4 +62,5 @@ class CategoryController(Controller):
         id: int, 
         categories_repo: CategoryRepository
     ) -> None:
+        """Delete a specific category"""
         categories_repo.delete(id)
