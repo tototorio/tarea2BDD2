@@ -39,17 +39,15 @@ app/
 migrations/          # Migraciones de Alembic
 ```
 
-## Crear una copia privada de este repositorio
+## Modificaciones al proyecto base
 
-Para crear una copia privada de este repositorio en tu propia cuenta de GitHub, conservando el historial de commits, sigue estos pasos:
-
-- Primero, crea un repositorio privado en tu cuenta de GitHub. Guarda la URL del nuevo repositorio.
-- Luego, ejecuta los siguientes comandos en tu terminal, reemplazando `<URL_DE_TU_REPOSITORIO_PRIVADO>` con la URL de tu nuevo repositorio privado:
-
-  ```bash
-  git clone https://github.com/dialvarezs/learning-vue-bd2-2025 # Clona el repositorio
-  cd learning-vue-bd2-2025
-  git remote remove origin                                      # Elimina el origen remoto existente
-  git remote add origin <URL_DE_TU_REPOSITORIO_PRIVADO>         # Agrega el nuevo origen remoto
-  git push -u origin main                                       # Sube la rama principal al
-  ```
+| Requisito | Estado |
+|-----------|--------|
+|Crear modelo categoría, con relaciones, DTOs, repositorio y controladores|Cumplido|
+|Crear modelo review, con relaciones, DTOs, repositorio y controladores|Cumplido|
+|Actualizar modelo Book, agregando inventario y descripción. Actualizar endpoints|Cumplido|
+|Actualizar modelo User con nuevos atributos. Modificar DTOs y endpoints|Cumplido|
+|Actualizar modelo Loan con nuevos atributos. Modificar DTOs y endpoints|Cumplido|
+|Implementar métodos nuevos a repositorio de Book, incluir nuevos endpoints para los mismos|Cumplido|
+|Implementar métodos nuevos a repositorio de Loan, incluir nuevos endpoints para los mismos|Cumplido|
+|Crear base de datos inicial|Cumplido| 
