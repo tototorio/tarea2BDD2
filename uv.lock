@@ -402,6 +402,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "alembic" },
+    { name = "faker" },
     { name = "litestar", extra = ["jwt", "sqlalchemy", "standard"] },
     { name = "psycopg", extra = ["binary", "pool"] },
     { name = "pwdlib", extra = ["argon2"] },
@@ -411,7 +412,8 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "alembic", specifier = ">=1.17.2" },
-    { name = "litestar", extras = ["standard", "sqlalchemy", "jwt"], specifier = ">=2.18.0" },
+    { name = "faker", specifier = ">=38.2.0" },
+    { name = "litestar", extras = ["jwt", "sqlalchemy", "standard"], specifier = ">=2.18.0" },
     { name = "psycopg", extras = ["binary", "pool"], specifier = ">=3.2.12" },
     { name = "pwdlib", extras = ["argon2"], specifier = ">=0.3.0" },
     { name = "pydantic-settings", specifier = ">=2.12.0" },

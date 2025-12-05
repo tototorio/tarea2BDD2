@@ -30,8 +30,8 @@ class BookRepository(SQLAlchemySyncRepository[Book]):
                 select(Book)
                 .join(Book.reviews)
                 .group_by(Book.id)
-                .order_by(desc(func.count(Review.id))
-                .limit(limit))
+                .order_by(desc(func.count(Review.id)))
+                .limit(limit)
         )
 
         result = self.session.execute(stmt)

@@ -48,6 +48,8 @@ class LoanController(Controller):
         if get_overdue:
             return loans_repo.get_overdue_loans()
         
+        return loans_repo.list()
+
     @get("/fine")
     async def get_fine(
         self,

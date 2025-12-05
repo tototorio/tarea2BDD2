@@ -68,7 +68,7 @@ class BookController(Controller):
         if get_available:
             return books_repo.get_available_books()
         if get_most_reviewed:
-            return books_repo.get_most_reviewed_books() 
+            return books_repo.get_most_reviewed_books(limit) 
         if get_recent:
             return books_repo.list(
             LimitOffset(offset=0, limit=limit),
@@ -77,7 +77,23 @@ class BookController(Controller):
 
         return books_repo.list()
 
-
+    @get("/most/reviews")
+    async def get_most_reviewed(
+        self,
+        books_repo: BookRepository,
+        limit: Annotated[int, Parameter(query="limit", ge=1, le=50, default=10)] = 10,
+    ) -> Sequence[Book]:
+        """Get statistics about books."""
+        total_books = books_repo.count()
+        if total_books == 0:
+            return BookStats(
+                total_books=0,
+                average_pages=0,
+                oldest_publication_year=None,
+                newest_publication_year=None,
+            )
+        
+    @get("/most/recent")
     @get("/stats")
     async def get_book_stats(
         self,
@@ -148,7 +164,7 @@ class BookController(Controller):
         book, _ = books_repo.get_and_update(match_fields="id", id=id, **data.as_builtins())
         return book
     
-    @patch("/stock", dto=BookUpdateDTO)
+    @patch("/stock", dto=None)
     async def update_stock(
         self,
         id: int,
